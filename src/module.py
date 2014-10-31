@@ -122,9 +122,9 @@ class BasicHydroponicsModule(BasicInsideModule):
             photosynthesis += (1-photosynthesis)*station.satisfy_reaction({'Name':'Photosynthesis', 'Inputs':{'Carbon Dioxide':self.biomass, 'Water':self.biomass }, 'Outputs':{'Oxygen':self.biomass*(16/22.0), 'Food':self.biomass} },(1-photosynthesis)*dt)
 
         time_const = util.seconds(2,'months')
-        self.biomass += respiration*dt/1000000.0 - dt*self.biomass/time_const/1000000.0        
+        self.biomass += photosynthesis*dt/1000000.0 - dt*self.biomass/time_const/1000000.0        
         
-        print respiration, self.biomass    
+        print photosynthesis, self.biomass    
         #self.reaction_base.append( {'Name':'Hydro', 'Inputs':{'Hydro':1}, 'Outputs':{'Food':1.0} } )        
         
         #self.reaction_base.append( {'Name':'Hydro', 'Inputs':{'Power':2.0,'Water':1.0,'Carbon Dioxide':}, 'Outputs':{'Food':1.0} } )
