@@ -161,24 +161,7 @@ class Station:
         res = ['Meals']
         tc = util.seconds(1,'week')
         self._atrophy_res(res,tc,dt)
-      
-        #resource activity
-        #CO2 removal - just dumped off the station
-        '''safe_co2 = 0.05
-        tot_gas = (self.get_item('Carbon Dioxide') + self.get_item('Oxygen') + self.get_item('Nitrogen')) #does not take into account MW of gases, TODO fix
-        excess_co2 = self.storage['Carbon Dioxide'] / tot_gas
-        if excess_co2 > safe_co2:
-            pur = self.storage['AirPurification']
-            co2_to_remove = min(pur,tot_gas*(excess_co2 - safe_co2))
-            self.sub_item('Carbon Dioxide',co2_to_remove)
-        self.storage['AirPurification'] = 0'''
-        
-        #water purification
-        '''water_to_filter = min(self.get_item('WaterPurification'),self.get_item('Liquid Waste'))
-        self.sub_item('Liquid Waste',water_to_filter)
-        self.add_item('Water',water_to_filter)
-        self.storage['WaterPurification'] = 0'''
-        
+              
         #gas leakage
         leak = 0.0001/util.seconds(1,'day') #.01%/day
         for r in ['Oxygen','Nitrogen','Carbon Dioxide']:

@@ -1575,8 +1575,8 @@ class LandTransfer(ImpulsiveTransfer):
     def surface(self): return self.__surface
     def location(self): return self.__surface
 
-    def burns(self): return [self.__surface.atmosphericFactor()*
-                             self.__surface.speedDifference()]
+    def burns(self): return [(1-self.__surface.atmosphericFactor())*
+                             self.__surface.escapeSpeedExcess()]
 
     def __str__(self):
         return "land on `%s'" % str(self.__surface)
