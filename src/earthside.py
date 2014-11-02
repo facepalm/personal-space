@@ -5,7 +5,7 @@ import botex
 
 class EarthsideStation(Station):
     def __init__(self):
-        Station.__init__(self,name='Earthside',location = botex.earthSurface)
+        Station.__init__(self,name='Earthside',location = 'Earthside')
         
     def update(self,dt): #Earthside station is only a placeholder, after all
         pass
@@ -14,6 +14,6 @@ class EarthsideStation(Station):
         
 if __name__ == "__main__":
     earth = EarthsideStation()
-    station = Station(location=botex.stationaryEarthOrbit)
+    station = Station()
     
-    print botex.Course(earth.location,station.location).deltavee()
+    print botex.Course(botex.fetchLocation(earth.location),botex.fetchLocation(station.location)).deltavee()

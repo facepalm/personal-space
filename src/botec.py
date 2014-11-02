@@ -30,7 +30,7 @@ except ImportError:
 
 DEBUG = True
 
-DEFAULT_FILENAME = 'default.botec'
+DEFAULT_FILENAME = 'src/default.botec'
 COMPRESSED_EXTENSION = '.gz'
 
 # Dimensionless constants

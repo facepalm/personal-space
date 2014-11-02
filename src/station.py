@@ -12,7 +12,7 @@ intangibles.extend([j.split('Job')[0] for j in job.joblist.keys()])
 class Station:
     def __init__(self,name=None,location=None):    
         self.id = util.register(self,'station')
-        self.location = location if location else botex.lowEarthOrbit
+        self.location = location if location else 'LEO'
         self.storage = dict()
         self.actors = []
         self.modules = []

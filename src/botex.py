@@ -12,6 +12,12 @@ import sys
 
 from botec import *
 
+LOC = dict()
+
+def fetchLocation(location):
+    if location in LOC: return LOC[location]
+    return SYSTEM[location]
+       
 
 def init(filename):
     return load(filename)
@@ -124,7 +130,9 @@ else:
     filename = None
 SYSTEM = init(filename)
 
+
 if filename is None:
+    
     sun = SYSTEM['Sun']
     mercury = SYSTEM['Mercury']
     venus = SYSTEM['Venus']
@@ -146,6 +154,12 @@ if filename is None:
     triton = SYSTEM['Triton']
     pluto = SYSTEM['Pluto']
     charon = SYSTEM['Charon']
+
+    LOC['LEO'] = AltitudeLocation(earth, 200e3)
+    LOC['Earthside'] = SurfaceLocation(earth)#AltitudeLocation(earth, 0)
+    LOC['GEO'] = AltitudeLocation(earth, earth.apostationaryAltitude())
+
+
 
     mercurySurface = SurfaceLocation(mercury)
     stationarySunOrbit = StationaryLocation(sun)
