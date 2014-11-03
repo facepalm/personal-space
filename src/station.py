@@ -19,6 +19,11 @@ class Station:
         self.jobs = []
         self.res_capacity = 1 #kg
         self.name = name if name is not None else "Generic Station" #TODO write witty station name generator
+        
+        self.home_station = None
+        self.home_relationship = None
+        
+        self.account = 1000000000 #one BILLION dollars!
                 
         self.reaction_base = []
         self.reaction_actv = []
@@ -29,7 +34,7 @@ class Station:
         self.storage['Power'] = 0
         self.storage['AdminPts'] = 10        
                
-        self.storage_limit = 1.0 * util.seconds(6,'months')
+        self.storage_limit = 1.0 * util.seconds(2,'months')
         self.storage_prev = dict()       
         self.storage_usage = dict()       
         self.storage_avg = dict()     
@@ -117,11 +122,13 @@ class Station:
                 self.storage_avg[s] += self.storage[s]*min(dt/self.storage_limit,1)
                                 
                 _diff = self.storage[s] - self.storage_prev[s]
-                if s not in self.storage_usage: self.storage_usage[s] = _diff/dt
-                #print s, _diff, max(1-dt/self.storage_limit,0), min(dt/self.storage_limit,1)
-                self.storage_usage[s] *= max(1-dt/self.storage_limit,0)
-                self.storage_usage[s] += (_diff/dt)*min(dt/self.storage_limit,1)
-                
+                if s not in self.storage_usage: 
+                    self.storage_usage[s] = _diff/dt
+                else:
+                    #print s, _diff, max(1-dt/self.storage_limit,0), min(dt/self.storage_limit,1)
+                    self.storage_usage[s] *= max(1-dt/self.storage_limit,0)
+                    self.storage_usage[s] += (_diff/dt)*min(dt/self.storage_limit,1)
+                    
                 
     
         #reset last_storage
@@ -199,46 +206,48 @@ class Station:
         out = dict()
         for s in self.storage_usage:
             if s in self.nontradeable: continue
-            out[s] = self.storage_limit/(-1*self.storage_avg[s]/self.storage_usage[s]) if self.storage_usage[s] and self.storage_avg[s]/self.storage_usage[s] else 0
+            #out[s] = self.storage_limit/(-1*self.storage_avg[s]/self.storage_usage[s]) if self.storage_usage[s] and self.storage_avg[s]/self.storage_usage[s] else 0
+            out[s] = -1.0*(self.storage_usage[s]*6*self.storage_limit)/self.storage_avg[s] if self.storage_avg[s] else 0 
+            #out[s] = self.storage_avg[s]/(self.storage_usage[s]*3*self.storage_limit) if self.storage_usage[s] else 0 
         return out        
         
     def print_output(self):
         #convenience function to change what's being printed        
         prior = self.storage_values()
         for p in sorted(prior.keys(), key= lambda a: prior[a], reverse = True):
-            print p, prior[p], self.storage[p]
+            print p, prior[p], self.storage[p], self.storage_usage[p]*6*self.storage_limit
         
+    def init_storage_std(self):
+        mod_count = len(self.modules)
+        self.storage['Oxygen'] = 10 * mod_count
+        self.storage['Food'] = 100 * mod_count
+        self.storage['Water'] = 100 * mod_count
+        self.storage['Nitrogen'] = 100 * mod_count
+        self.storage['General Consumables'] = 50 * mod_count
+        self.storage['Parts'] = 50 * mod_count
         
         
 if __name__ == "__main__":
     from time import sleep         
     test = Station('Test Station')        
     
-    test.storage['Oxygen'] = 5
-    test.storage['Food'] = 1000
-    test.storage['Water'] = 1000
-    test.storage['Nitrogen'] = 100
-    test.storage['General Consumables'] = 1000
-    test.storage['Parts'] = 100
-    
     import module
     import actors
-    mod = module.SolarPowerModule()
-    test.modules.append(mod.id)    
 
+    test.modules.append(module.SolarPowerModule().id)
     test.modules.append(module.BasicLivingModule().id)
-    test.modules.append(module.BasicHydroponicsModule().id)
+    #test.modules.append(module.BasicHydroponicsModule().id)        
+    test.modules.append(module.BasicHabitationModule().id)
         
-    mod = module.BasicHabitationModule()
-    test.modules.append(mod.id)
-    
     act = actors.Human()    
     test.actors.append(act.id)
-        
+    
+    test.init_storage_std()
+            
     for i in range(1,30000):
         print 'Oxygen:', test.gas_pp('Oxygen')
         test.update(globalvars.config['TIME FACTOR']*1000*0.5)      
         print util.timestring(globalvars.config['TIME FACTOR']*1000*0.5*i)
-        pprint.pprint(test.storage)
-        #test.print_output()
+        #pprint.pprint(test.storage)
+        test.print_output()
         sleep(0.05)

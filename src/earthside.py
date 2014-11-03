@@ -32,12 +32,15 @@ class EarthsideStation(Station):
 
 def get_launch_cost(launches = None):
     if not launches: launches = launch_rate
-    return 17*math.exp(-launches/3) #COMPLETE ass-pull, to make the numbers work out for atlas (1/yr) vs falcon9 (4/yr)
+    return 17*math.exp(-launches/3.0) #COMPLETE ass-pull, to make the numbers work out for atlas (1/yr) vs falcon9 (4/yr)
     
         
 if __name__ == "__main__":
     earth = EarthsideStation()
     station = Station()
+    
+    transfer = Station()
+
     
     print botex.Course(botex.fetchLocation(station.location),botex.fetchLocation(earth.location)).deltavee()
     print get_launch_cost(),get_launch_cost(4.0)
