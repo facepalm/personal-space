@@ -84,7 +84,7 @@ class BasicLivingModule(BasicInsideModule):
         if station.get_item('Liquid Waste'):
             station.satisfy_reaction(self.filtration,dt)            
 
-        if 4*station.get_item('Water') < station.get_item('Gray Water'):
+        if station.get_item('Gray Water'):
             print station.get_item('Water'), station.get_item('Gray Water')
             station.satisfy_reaction(self.distillation,dt)                    
         

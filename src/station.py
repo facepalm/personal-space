@@ -40,7 +40,7 @@ class Station:
         self.storage_avg = dict()     
         
         self.nontradeable = ['Meals','Carbon Dioxide','Liquid Waste','Oxygen','Gray Water','Hydrogen'] #resources (generally intermediate) THIS station doesn't need or care to trade
-        self.nontradeable = ['Meals','Liquid Waste','Gray Water','Hydrogen'] #resources (generally intermediate) THIS station doesn't need or care to trade                  
+        #self.nontradeable = ['Meals','Liquid Waste','Gray Water','Hydrogen'] #resources (generally intermediate) THIS station doesn't need or care to trade                  
                
     def add_item(self,item,amt):
         if item in self.storage: 
@@ -207,7 +207,7 @@ class Station:
         for s in self.storage_usage:
             if s in self.nontradeable: continue
             #out[s] = self.storage_limit/(-1*self.storage_avg[s]/self.storage_usage[s]) if self.storage_usage[s] and self.storage_avg[s]/self.storage_usage[s] else 0
-            out[s] = -1.0*(self.storage_usage[s]*6*self.storage_limit)/self.storage_avg[s] if self.storage_avg[s] else 0 
+            out[s] = -1.0*(self.storage_usage[s]*6*self.storage_limit)/self.storage[s] if self.storage[s] else 0 
             #out[s] = self.storage_avg[s]/(self.storage_usage[s]*3*self.storage_limit) if self.storage_usage[s] else 0 
         return out        
         
