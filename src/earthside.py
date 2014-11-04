@@ -41,7 +41,11 @@ if __name__ == "__main__":
     
     transfer = Station()
 
-    
+    print botex.LowOrbitLocation(botex.earth).altitude()
     print botex.Course(botex.fetchLocation(station.location),botex.fetchLocation(earth.location)).deltavee()
+    print botex.Course(botex.earthSurface,botex.lowEarthOrbit).deltavee()
+    print botex.Course(botex.earthSurface,botex.highEarthOrbit).deltavee()        
+    print botex.Course(botex.earthSurface,botex.stationaryEarthOrbit).deltavee()    
     print get_launch_cost(),get_launch_cost(4.0)
-    
+    print
+    print botex.plot(botex.earthSurface,botex.marsSurface)

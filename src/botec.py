@@ -551,6 +551,20 @@ class GrazingLocation(AltitudeLocation):
     def __init__(self, primary):
         AltitudeLocation.__init__(self, primary, 0.0)
 
+class LowOrbitLocation(AltitudeLocation):
+
+    """A low orbit location is the first "safe" orbital location, 
+    defined as pressure equal to that of LEO, or some fraction of the
+    world's radius. """
+    
+    def __init__(self, primary):
+        height = primary.radius() / 0.1
+        atmo = primary.atmosphereMass()        
+        if atmo: height = primary.altitudeAtPressure(6.1283e-6)
+        AltitudeLocation.__init__(self, primary, height)
+    
+
+
 
 class World(Location):
 
@@ -1207,6 +1221,16 @@ class World(Location):
         [1]"""
         return (1/PI)*math.atan(self.primary().radius()/self.distance())
 
+    def lowOrbitAltitude(self):
+        height = self.radius() / 0.1
+        atmo = self.atmosphereMass()        
+        if atmo: height = self.altitudeAtPressure(6.1283e-6)
+        return height
+        
+    def lowOrbitSpeed(self):
+        return self.orbitalSpeedAtDistance(self.lowOrbitAltitude()+self.radius())
+        
+
     def __str__(self): return self.data['name']
 
 class SurfaceLocation(Location):
@@ -1233,6 +1257,13 @@ class SurfaceLocation(Location):
         its rotation speed."""
         return (self.escapeSpeedFromPrimary() -
                 self.__world.rotationSpeed())
+                
+    def orbitalSpeedExcess(self):
+        """The difference between the speed in low object orbit and
+        its rotation speed."""
+        return (self.__world.lowOrbitSpeed() -
+                self.__world.rotationSpeed())        
+
 
     def __str__(self):
         return "surface of `%s'" % (str(self.primary()))
@@ -1559,7 +1590,7 @@ class LaunchTransfer(ImpulsiveTransfer):
     def location(self): return self.__surface
 
     def burns(self): return [self.__surface.atmosphericFactor()*
-                             self.__surface.escapeSpeedExcess()]
+                             self.__surface.orbitalSpeedExcess()]
 
     def __str__(self):
         return "launch from `%s'" % str(self.__surface)
@@ -1576,7 +1607,7 @@ class LandTransfer(ImpulsiveTransfer):
     def location(self): return self.__surface
 
     def burns(self): return [(1-self.__surface.atmosphericFactor())*
-                             self.__surface.escapeSpeedExcess()]
+                             self.__surface.orbitalSpeedExcess()]
 
     def __str__(self):
         return "land on `%s'" % str(self.__surface)
@@ -1956,11 +1987,11 @@ class Course(ReprMixin):
         # Handle launches.
         if isinstance(source, SurfaceLocation):
             before.append(LaunchTransfer(source))
-            source = source.world()
+            source = LowOrbitLocation(source.world())
         # Handle landings.
         if isinstance(destination, SurfaceLocation):
             after.append(LandTransfer(destination))
-            destination = destination.world()
+            destination = LowOrbitLocation(destination.world())
         # Handle returns.
         if isinstance(source, LibrationLocation):
             before.append(ReturnTransfer(source))
