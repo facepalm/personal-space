@@ -531,6 +531,8 @@ class StationaryLocation(Location):
     def __init__(self, primary):
         Location.__init__(self, primary, primary.apostationaryDistance())
 
+    def stationKeeping(self):
+        return 50 / float(SI('1 y')) #default for Earth GEO, will need generalization for other worlds
 
 class AltitudeLocation(Location):
 
@@ -543,7 +545,8 @@ class AltitudeLocation(Location):
         Location.__init__(self, primary, primary.radius() + height)
 
     def stationKeeping(self):
-        if self.primary().atmosphereMass() and self.pressureAt(): return 250*pow(self.pressureAt(),0.1)
+        if self.primary().atmosphereMass() and self.pressureAt(): 
+            return 250*pow(self.pressureAt(),0.1) / float(SI('1 y')) 
         return Location.stationKeeping(self)
 
 

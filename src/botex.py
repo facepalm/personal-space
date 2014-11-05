@@ -157,8 +157,8 @@ if filename is None:
 
     LOC['LEO'] = AltitudeLocation(earth, 200e3)
     LOC['Earthside'] = SurfaceLocation(earth)#AltitudeLocation(earth, 0)
-    LOC['GEO'] = AltitudeLocation(earth, earth.apostationaryAltitude())
-
+    LOC['GEO'] = StationaryLocation(earth)
+    LOC['EML1'] = LibrationLocation(moon, LibrationLocation.L1)
 
 
     mercurySurface = SurfaceLocation(mercury)

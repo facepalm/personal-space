@@ -302,9 +302,8 @@ class Station:
         return True
 
     def stationKeepingDeltavee(self,dt):
-        frac = dt/util.seconds(1,'year')
         loc_sk = botex.fetchLocation(self.location).stationKeeping()
-        return frac*loc_sk
+        return loc_sk*dt
         
         
 if __name__ == "__main__":
