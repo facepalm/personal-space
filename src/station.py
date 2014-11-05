@@ -34,7 +34,7 @@ class Station:
         self.storage['Power'] = 0
         self.storage['AdminPts'] = 10        
                
-        self.storage_limit = 1.0 * util.seconds(2,'months')
+        self.storage_limit = 1.0 * util.seconds(6,'months')
         self.storage_prev = dict()       
         self.storage_usage = dict()       
         self.storage_avg = dict()     
@@ -118,16 +118,16 @@ class Station:
                 self.storage_prev[s] = 0
                 self.storage_avg[s] = self.storage[s] 
             else:                
-                self.storage_avg[s] *= max(1-dt/self.storage_limit,0)
-                self.storage_avg[s] += self.storage[s]*min(dt/self.storage_limit,1)
+                self.storage_avg[s] *= max(1-dt/(self.storage_limit/3.0),0)
+                self.storage_avg[s] += self.storage[s]*min(dt/(self.storage_limit/3.0),1)
                                 
                 _diff = self.storage[s] - self.storage_prev[s]
                 if s not in self.storage_usage: 
                     self.storage_usage[s] = _diff/dt
                 else:
                     #print s, _diff, max(1-dt/self.storage_limit,0), min(dt/self.storage_limit,1)
-                    self.storage_usage[s] *= max(1-dt/self.storage_limit,0)
-                    self.storage_usage[s] += (_diff/dt)*min(dt/self.storage_limit,1)
+                    self.storage_usage[s] *= max(1-dt/(self.storage_limit/3.0),0)
+                    self.storage_usage[s] += (_diff/dt)*min(dt/(self.storage_limit/3.0),1)
                     
                 
     
@@ -207,7 +207,7 @@ class Station:
         for s in self.storage_usage:
             if s in self.nontradeable: continue
             #out[s] = self.storage_limit/(-1*self.storage_avg[s]/self.storage_usage[s]) if self.storage_usage[s] and self.storage_avg[s]/self.storage_usage[s] else 0
-            out[s] = -1.0*(self.storage_usage[s]*6*self.storage_limit)/self.storage[s] if self.storage[s] else 0 
+            out[s] = -1.0*(self.storage_usage[s]*self.storage_limit)/self.storage[s] if self.storage[s] else 0 
             #out[s] = self.storage_avg[s]/(self.storage_usage[s]*3*self.storage_limit) if self.storage_usage[s] else 0 
         return out        
         
@@ -215,7 +215,7 @@ class Station:
         #convenience function to change what's being printed        
         prior = self.storage_values()
         for p in sorted(prior.keys(), key= lambda a: prior[a], reverse = True):
-            print p, prior[p], self.storage[p], self.storage_usage[p]*6*self.storage_limit
+            print p, prior[p], self.storage[p], self.storage_usage[p]*self.storage_limit
         
     def init_storage_std(self):
         mod_count = len(self.modules)
@@ -225,6 +225,29 @@ class Station:
         self.storage['Nitrogen'] = 100 * mod_count
         self.storage['General Consumables'] = 50 * mod_count
         self.storage['Parts'] = 50 * mod_count
+        self.storage['RP-1'] = 100 * mod_count
+        self.storage['LOX'] = 300 * mod_count        
+        
+    def earthside_resupply(self):
+        '''Buy goods from Earth. Limited to whatever can be crammed in a Dragon capsule'''        
+        if self.location != 'LEO' or not globalvars.earthside: return None
+        val = self.storage_values()
+        amt = dict()
+        max_amt = 3310 #kgs to LEO.  
+        #calculate total mass need
+        tot_mass = 0.0
+        for p in sorted(val.keys(), key= lambda a: val[a], reverse = True):
+            if val[p] >= 1: tot_mass += -1*self.storage_usage[p]*self.storage_limit
+        print tot_mass
+        
+        tot_val = 0.0
+        for p in sorted(val.keys(), key= lambda a: val[a], reverse = True):
+            if val[p] >= 0: tot_val += val[p]
+            
+        for p in sorted(val.keys(), key= lambda a: val[a], reverse = True):
+            if val[p] >= 0: amt[p] = max_amt*(val[p]/tot_val)
+        print amt
+        return
         
         
 if __name__ == "__main__":

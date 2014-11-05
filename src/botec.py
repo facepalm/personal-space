@@ -542,6 +542,10 @@ class AltitudeLocation(Location):
         assert primary.radius() > 0.0
         Location.__init__(self, primary, primary.radius() + height)
 
+    def stationKeeping(self):
+        if self.primary().atmosphereMass() and self.pressureAt(): return 250*pow(self.pressureAt(),0.1)
+        return Location.stationKeeping(self)
+
 
 class GrazingLocation(AltitudeLocation):
 

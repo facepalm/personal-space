@@ -30,3 +30,4 @@ scenario = None
 universe = None
 mousedown=False
 
+earthside = None

@@ -1,6 +1,7 @@
 from station import Station
 import botex
 import math
+import globalvars
 
 #nominally, handles everything going on earthside
 
@@ -35,17 +36,48 @@ def get_launch_cost(launches = None):
     return 17*math.exp(-launches/3.0) #COMPLETE ass-pull, to make the numbers work out for atlas (1/yr) vs falcon9 (4/yr)
     
         
+globalvars.earthside = EarthsideStation()        
+        
 if __name__ == "__main__":
-    earth = EarthsideStation()
+    
     station = Station()
     
     transfer = Station()
 
     print botex.LowOrbitLocation(botex.earth).altitude()
-    print botex.Course(botex.fetchLocation(station.location),botex.fetchLocation(earth.location)).deltavee()
-    print botex.Course(botex.earthSurface,botex.lowEarthOrbit).deltavee()
+    print botex.Course(botex.fetchLocation(station.location),botex.fetchLocation(globalvars.earthside.location)).deltavee()
+    
+    '''print botex.Course(botex.earthSurface,botex.lowEarthOrbit).deltavee()
     print botex.Course(botex.earthSurface,botex.highEarthOrbit).deltavee()        
     print botex.Course(botex.earthSurface,botex.stationaryEarthOrbit).deltavee()    
     print get_launch_cost(),get_launch_cost(4.0)
     print
     print botex.plot(botex.earthSurface,botex.marsSurface)
+    '''
+    
+    from time import sleep         
+    test = Station('Test Station')        
+    
+    import module
+    import actors
+    import util
+
+    test.modules.append(module.SolarPowerModule().id)
+    test.modules.append(module.BasicLivingModule().id)
+    #test.modules.append(module.BasicHydroponicsModule().id)        
+    test.modules.append(module.BasicHabitationModule().id)
+        
+    act = actors.Human()    
+    test.actors.append(act.id)
+    
+    test.init_storage_std()
+            
+    for i in range(1,10):
+        print 'i:', i
+        test.update(globalvars.config['TIME FACTOR']*1000*0.5)      
+        print util.timestring(globalvars.config['TIME FACTOR']*1000*0.5*i)
+        #pprint.pprint(test.storage)
+        test.print_output()
+        sleep(0.05)    
+    test.earthside_resupply()
+    print botex.fetchLocation(station.location).stationKeeping()

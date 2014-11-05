@@ -88,6 +88,16 @@ class BasicLivingModule(BasicInsideModule):
             print station.get_item('Water'), station.get_item('Gray Water')
             station.satisfy_reaction(self.distillation,dt)                    
         
+class GenericEngineModule(Module):
+    def __init__(self):
+        Module.__init__(self)
+        
+        #based loosely on the NK-33
+        self.mass = 1200
+        self.isp = 330 
+        self.propellant = {'RP-1':0.25,'LOX':0.75}
+
+        
 class BasicHydroponicsModule(BasicInsideModule):
     def __init__(self):
         BasicInsideModule.__init__(self)                                 
