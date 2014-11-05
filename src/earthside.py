@@ -66,11 +66,16 @@ if __name__ == "__main__":
     test.modules.append(module.BasicLivingModule().id)
     #test.modules.append(module.BasicHydroponicsModule().id)        
     test.modules.append(module.BasicHabitationModule().id)
+    test.modules.append(module.GenericEngineModule().id)    
         
     act = actors.Human()    
     test.actors.append(act.id)
     
     test.init_storage_std()
+    
+    print 'Stationkeeping:',test.stationKeepingDeltavee(util.seconds(1,'year'))
+    print test.burn(10)
+    quit()
             
     for i in range(1,10):
         print 'i:', i

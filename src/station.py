@@ -12,7 +12,7 @@ intangibles.extend([j.split('Job')[0] for j in job.joblist.keys()])
 class Station:
     def __init__(self,name=None,location=None):    
         self.id = util.register(self,'station')
-        self.location = location if location else 'LEO'
+        self.location = location if location else 'GEO'
         self.storage = dict()
         self.actors = []
         self.modules = []
@@ -248,6 +248,63 @@ class Station:
             if val[p] >= 0: amt[p] = max_amt*(val[p]/tot_val)
         print amt
         return
+        
+    def get_mass(self):
+        mass = 0
+        for r in self.storage:
+            if r not in intangibles: 
+                mass += self.storage[r]
+        for m in self.modules:
+            mod = globalvars.modules[m]
+            mass += mod.mass
+        for a in self.actors:
+            act = globalvars.actors[a]
+            mass += act.mass
+        return mass        
+    mass = property(get_mass, None, None, "Mass of station" )         
+        
+    def get_max_dv_engine(self):
+        best_dv = 0
+        best_mod = None
+        m0 = self.get_mass()
+        g0 = 9.8 #m/s^2
+        for m in self.modules:
+            mod = globalvars.modules[m]
+            if not mod.active or not hasattr(mod,'isp'): continue
+            prop_max = None
+            for r in mod.propellant:
+                prop_new = self.get_item(r)/(1.0*mod.propellant[r])
+                prop_max = prop_new if not prop_max else min(prop_max,prop_new)
+            m1 = m0 - prop_max            
+            dv = mod.isp * g0 * math.log(m0/m1)
+            if dv > best_dv:
+                best_dv = dv
+                best_mod = m
+        return (best_mod, best_dv)                
+                
+        
+    def burn(self,dv):
+        b_mod, b_dv = self.get_max_dv_engine()
+        if b_dv < dv: return False #we don't have the fuel for the requested burn
+        g0 = 9.8 #m/s^2
+        mod = globalvars.modules[b_mod]
+        #dv = isp*g0*log(m0/m1)
+        #dv/(isp*g0) = log(m0/m1)
+        #exp(dv/(isp*g0)) = m0/m1
+        #m1 = m0/exp(dv/(isp*g0))
+        m0=self.mass
+        m1 = m0/math.exp(dv/(mod.isp*g0))
+        burn_mass = m0-m1
+        print 'Burning!'
+        for r in mod.propellant:
+            print r,burn_mass*mod.propellant[r]
+            self.sub_item(r,burn_mass*mod.propellant[r])
+        return True
+
+    def stationKeepingDeltavee(self,dt):
+        frac = dt/util.seconds(1,'year')
+        loc_sk = botex.fetchLocation(self.location).stationKeeping()
+        return frac*loc_sk
         
         
 if __name__ == "__main__":

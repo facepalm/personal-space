@@ -12,6 +12,7 @@ class Actor(object):
         self.reaction_base.append( {'Name':'Clutter', 'Inputs':{}, 'Outputs':{'SanitationJob': .05 } } )
         
         self.skill = job.generate_random_skillset()
+        self.mass = 80
 
     def get_reactions(self):
         return [self.reaction_base, self.reaction_actv]
