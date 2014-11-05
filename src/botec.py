@@ -509,7 +509,7 @@ class Location(ReprMixin):
         # This is estimated from a simple exponential position law
         # tending to draw particles away from the point, and analyzing the
         # average acceleration of the particle which needs to be cancelled.
-        if self.instability() is None:
+        if self.instability() is None or self.instability() == 0.0:
             return 0.0
         # a = r_0/tau^2
         R_0 = 100e3

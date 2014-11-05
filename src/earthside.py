@@ -44,7 +44,7 @@ if __name__ == "__main__":
     
     transfer = Station()
 
-    print botex.LowOrbitLocation(botex.earth).altitude()
+    #print botex.LowOrbitLocation(botex.earth).altitude()
     #print botex.Course(botex.fetchLocation(station.location),botex.fetchLocation(globalvars.earthside.location)).deltavee()
     
     '''print botex.Course(botex.earthSurface,botex.lowEarthOrbit).deltavee()
@@ -73,11 +73,11 @@ if __name__ == "__main__":
     
     test.init_storage_std()
     
-    print 'Stationkeeping:',test.stationKeepingDeltavee(util.seconds(1,'year'))
-    print test.burn(10)
-    quit()
+    #print 'Stationkeeping:',test.stationKeepingDeltavee(util.seconds(1,'year'))
+    #print test.burn(10)
+    #quit()
             
-    for i in range(1,10):
+    for i in range(1,1000):
         print 'i:', i
         test.update(globalvars.config['TIME FACTOR']*1000*0.5)      
         print util.timestring(globalvars.config['TIME FACTOR']*1000*0.5*i)
@@ -85,4 +85,3 @@ if __name__ == "__main__":
         test.print_output()
         sleep(0.05)    
     test.earthside_resupply()
-    print botex.fetchLocation(station.location).stationKeeping()

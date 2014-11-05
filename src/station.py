@@ -12,7 +12,8 @@ intangibles.extend([j.split('Job')[0] for j in job.joblist.keys()])
 class Station:
     def __init__(self,name=None,location=None):    
         self.id = util.register(self,'station')
-        self.location = location if location else 'GEO'
+        self.location = location if location else 'LEO'
+        self.accumulatedDeltavee = 0.0 #leftover dv from unmet stationkeeping burns.  Need to be spent for rendevous
         self.storage = dict()
         self.actors = []
         self.modules = []
@@ -64,7 +65,7 @@ class Station:
     def update(self,dt):            
     
         self.atrophy_intangible_resources(dt)        
-        
+                        
         if self.refresh_config:
             self.reaction_base = []
             self.reaction_actv = []
@@ -83,6 +84,10 @@ class Station:
                 #bas,act = mod.get_reactions()
                 #self.reaction_base.extend(bas)
                 #self.reaction_actv.extend(act)                                                                                    
+        
+        #burn for stationkeeping
+        dv = self.stationKeepingDeltavee(dt)
+        sk = self.burn(dv)
                        
                        
         for a in self.actors:
@@ -231,6 +236,7 @@ class Station:
     def earthside_resupply(self):
         '''Buy goods from Earth. Limited to whatever can be crammed in a Dragon capsule'''        
         if self.location != 'LEO' or not globalvars.earthside: return None
+        print 'Earthside resupply!'
         val = self.storage_values()
         amt = dict()
         max_amt = 3310 #kgs to LEO.  
@@ -242,10 +248,10 @@ class Station:
         
         tot_val = 0.0
         for p in sorted(val.keys(), key= lambda a: val[a], reverse = True):
-            if val[p] >= 0: tot_val += val[p]
+            if val[p] >= 0: tot_val += val[p]*-1*self.storage_usage[p]
             
         for p in sorted(val.keys(), key= lambda a: val[a], reverse = True):
-            if val[p] >= 0: amt[p] = max_amt*(val[p]/tot_val)
+            if val[p] >= 0: amt[p] = max_amt*(val[p]*-1*self.storage_usage[p]/tot_val)
         print amt
         return
         
@@ -295,9 +301,9 @@ class Station:
         m0=self.mass
         m1 = m0/math.exp(dv/(mod.isp*g0))
         burn_mass = m0-m1
-        print 'Burning!'
+        #print 'Burning!'
         for r in mod.propellant:
-            print r,burn_mass*mod.propellant[r]
+            #print r,burn_mass*mod.propellant[r]
             self.sub_item(r,burn_mass*mod.propellant[r])
         return True
 

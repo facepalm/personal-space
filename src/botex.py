@@ -156,6 +156,8 @@ if filename is None:
     charon = SYSTEM['Charon']
 
     LOC['LEO'] = AltitudeLocation(earth, 200e3)
+    LOC['ISS'] = AltitudeLocation(earth, 400e3)    
+    LOC['HEO'] = AltitudeLocation(earth, 1400e3)    
     LOC['Earthside'] = SurfaceLocation(earth)#AltitudeLocation(earth, 0)
     LOC['GEO'] = StationaryLocation(earth)
     LOC['EML1'] = LibrationLocation(moon, LibrationLocation.L1)
