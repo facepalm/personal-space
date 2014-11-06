@@ -40,6 +40,8 @@ class Station:
         self.storage_usage = dict()       
         self.storage_avg = dict()     
         
+        self.storage_avg_price = dict() #used in trading
+        
         self.nontradeable = ['Meals','Carbon Dioxide','Liquid Waste','Oxygen','Gray Water','Hydrogen'] #resources (generally intermediate) THIS station doesn't need or care to trade
         #self.nontradeable = ['Meals','Liquid Waste','Gray Water','Hydrogen'] #resources (generally intermediate) THIS station doesn't need or care to trade                  
                
@@ -310,14 +312,30 @@ class Station:
         return loc_sk*dt
         
     #trade pseudocode - to be performed by the trading vessel
-        #home = get home station
-        #potential = get random station, weighted by dv, of a random selection of other stations
-        #home_val = home values
-        #home_amt = home usage
-        #pot_val, pot_amt = potential, same thing
+        #currnt = get current station
+        #target = get random station, weighted by dv, of a random selection of other stations, or home if we have one and we're not there
+        #cur_val = current values
+        #cur_amt = current usage
+        #tar_val, tar_amt = same thing for target
         
-        #avg_val = mean values, weighted by respective trading partners' skill
-        #sum_usg = sum of respective usages, representing the amount that's available for trade at this price
+        #current station will sell items valued < 1, otherwise they need it for their stockpile
+        #target station will buy items valued > 0, otherwise they're producing a surplus and don't need more
+        
+        #profit: sell_amt - (buy_amt + dry_fuel_cost + payload_fuel_cost + kg_tariffs)
+        
+        #cal dv
+        #calc dry fuel for dv
+        #profit = -dry_fuel_cost
+        #calc additional kg $
+        #add kg tariff, or per item if applicable
+        
+        #for trade goods:
+        #   price_diff = tar_val*tar_avg_price - cur_val*cur_avg_price - kg$
+        #   buy_amt = cur_storage/min(1,cur_val+2)
+        #   profit += buy_amt*price_diff
+        
+        # can they pay
+        # is the net $ worth our time?
         
         
 if __name__ == "__main__":
