@@ -301,15 +301,23 @@ class Station:
         m0=self.mass
         m1 = m0/math.exp(dv/(mod.isp*g0))
         burn_mass = m0-m1
-        #print 'Burning!'
         for r in mod.propellant:
-            #print r,burn_mass*mod.propellant[r]
             self.sub_item(r,burn_mass*mod.propellant[r])
         return True
 
     def stationKeepingDeltavee(self,dt):
         loc_sk = botex.fetchLocation(self.location).stationKeeping()
         return loc_sk*dt
+        
+    #trade pseudocode - to be performed by the trading vessel
+        #home = get home station
+        #potential = get random station, weighted by dv, of a random selection of other stations
+        #home_val = home values
+        #home_amt = home usage
+        #pot_val, pot_amt = potential, same thing
+        
+        #avg_val = mean values, weighted by respective trading partners' skill
+        #sum_usg = sum of respective usages, representing the amount that's available for trade at this price
         
         
 if __name__ == "__main__":
