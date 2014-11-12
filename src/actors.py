@@ -81,4 +81,4 @@ class Human(Actor):
         cur_job = job.get_job_from_priority_skillset_prefs(station,self.skill,self.pref)
         job.run(cur_job, self, station, job_time ) 
                     
-        print cur_job
+        #print cur_job

@@ -4,6 +4,7 @@ import math
 import pprint
 import job
 import botex
+import module
 
 intangibles = ['Power','SolarPower','AdminPts','Living Space','Toilet Capacity','Habitation','Volume']
 intangibles.extend(job.joblist.keys())
@@ -238,33 +239,47 @@ class Station:
     def print_output(self):
         #convenience function to change what's being printed        
         prior = self.storage_values()
-        #for p in sorted(prior.keys(), key= lambda a: prior[a], reverse = True):
-        #    print p, prior[p], self.storage[p], self.storage_usage[p]*self.storage_limit
-        print self.storage['Power'], self.financial_account
+        for p in sorted(prior.keys(), key= lambda a: prior[a], reverse = True):
+            print p, prior[p], self.storage[p], self.storage_usage[p]*self.storage_limit
+        print "Money:", self.financial_account
+        '''val = self.storage_values()
+        tot_mass = 0.0
+        for p in sorted(val.keys(), key= lambda a: val[a], reverse = True):
+            if val[p] >= 0: tot_mass += -1*self.storage_usage[p]*self.storage_limit
+        print tot_mass'''
         
     def init_storage_std(self):
         mod_count = len(self.modules)
-        self.storage['Oxygen'] = 10 * mod_count
-        self.storage['Food'] = 100 * mod_count
-        self.storage['Water'] = 100 * mod_count
-        self.storage['Nitrogen'] = 100 * mod_count
-        self.storage['General Consumables'] = 50 * mod_count
-        self.storage['Parts'] = 50 * mod_count
-        self.storage['RP-1'] = 100 * mod_count
-        self.storage['LOX'] = 300 * mod_count                    
+        for m in self.modules:
+            mod = globalvars.modules[m]
+            if isinstance(mod,module.BasicInsideModule):
+                self.add_item('Oxygen', 10)
+                self.add_item('Nitrogen', 100)
+            if isinstance(mod,module.BasicHabitationModule):
+                self.add_item('Food', 300)
+                self.add_item('Water',300)
         
+            self.add_item('General Consumables',5)
+            self.add_item('Parts',5)
+            self.add_item('RP-1', 100 )
+            self.add_item('LOX', 300 )
+            
     def earthside_resupply(self):
         '''Buy goods from Earth. Limited to whatever can be crammed in a Dragon capsule'''        
         if self.location != 'LEO' or not globalvars.earthside: return None
         print 'Earthside resupply!'
         val = self.storage_values()
+        max_val = sorted(val.values(), reverse=True)[0]
         amt = dict()
-        max_amt = 3310 #kgs to LEO.  
+        max_amt = 13150 #kgs to LEO.  
         #calculate total mass need
-        #tot_mass = 0.0
-        #for p in sorted(val.keys(), key= lambda a: val[a], reverse = True):
-        #    if val[p] >= 1: tot_mass += -1*self.storage_usage[p]*self.storage_limit
-        #print tot_mass
+        tot_mass = 0.0
+        for p in sorted(val.keys(), key= lambda a: val[a], reverse = True):
+            if val[p] >= 0: tot_mass += -1*self.storage_usage[p]*self.storage_limit
+        #print tot_mass        
+        
+        if max_val < 1: return #we don't need to order more stuff now                    
+                
         
         tot_val = 0.0
         for p in sorted(val.keys(), key= lambda a: val[a], reverse = True):
@@ -336,8 +351,8 @@ class Station:
     def dock(self,stat_id):
         stat = globalvars.stations[stat_id]    
         if self.location != stat.location: return False #todo maybe move there?
-        if stat_id == self.home_station and self.home_relationship == 'Wholly-Owned Subsidiary':
-            #merge, more or less completely, with the station
+        if self.modules == []:
+            #we're a placeholder station.  merge, more or less completely, with the station
             for s in self.storage:
                 if s in intangibles: continue
                 stat.add_item(s,self.storage[s])

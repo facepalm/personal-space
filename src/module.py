@@ -57,7 +57,7 @@ class MicrowavePowerAntenna(Module):
         
         power_available = station.storage['Power']
         station.sub_item('Power',power_available)
-        
+        print "Converted power:", (power_available/3.6) * 3600 / dt ,'kW'
         station.financial_account += power_available * 0.85 / 3.6 * 0.08 #TODO add more dynamic price calculations
                        
 class BasicInsideModule(Module):
@@ -118,7 +118,6 @@ class BasicLivingModule(BasicInsideModule):
             station.satisfy_reaction(self.filtration,dt)            
 
         if station.get_item('Gray Water'):
-            print station.get_item('Water'), station.get_item('Gray Water')
             station.satisfy_reaction(self.distillation,dt)                    
         
 class GenericEngineModule(Module):
@@ -167,7 +166,7 @@ class BasicHydroponicsModule(BasicInsideModule):
         time_const = util.seconds(2,'months')
         self.biomass += photosynthesis*dt/1000000.0 - dt*self.biomass/time_const/1000000.0        
         
-        print photosynthesis, self.biomass    
+        #print photosynthesis, self.biomass    
         #self.reaction_base.append( {'Name':'Hydro', 'Inputs':{'Hydro':1}, 'Outputs':{'Food':1.0} } )        
         
         #self.reaction_base.append( {'Name':'Hydro', 'Inputs':{'Power':2.0,'Water':1.0,'Carbon Dioxide':}, 'Outputs':{'Food':1.0} } )

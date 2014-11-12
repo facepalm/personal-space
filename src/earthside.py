@@ -3,6 +3,7 @@ import botex
 import math
 import globalvars
 import module
+import random
 
 #nominally, handles everything going on earthside
 
@@ -23,6 +24,10 @@ class EarthsideStation(Station):
     def update(self,dt): #Earthside station is only a placeholder, after all
         global launch_rate
         launch_rate *= max(0,1 - dt/util.seconds(1,'year') )
+        
+        #gov't launches keep the cost down
+        if random.random()/10.0 < dt/util.seconds(1,'year'):
+            launch_rate += 1
     
     def storage_values(self):
         out = dict()
@@ -51,9 +56,9 @@ class EarthsideStation(Station):
         if stat.financial_account < 10000*get_launch_cost(): return False #cost of launch + supplies
         
         cargo_vessel = Station()
-        cargo_vessel.modules.append(module.DragonCargoModule().id)
-        cargo_vessel.add_item('MMH',412.8)
-        cargo_vessel.add_item('NTO',877.2)
+        #cargo_vessel.modules.append(module.DragonCargoModule().id)
+        #cargo_vessel.add_item('MMH',412.8)
+        #cargo_vessel.add_item('NTO',877.2)
         
         #check sum
         tot = 0
@@ -62,7 +67,7 @@ class EarthsideStation(Station):
             tot += amt[a]
             cargo_vessel.add_item(a,amt[a])
         
-        assert tot <= 3320
+        assert tot <= 14000 #3320
         
         stat.financial_account -= get_launch_cost()*cargo_vessel.mass
         
@@ -73,8 +78,8 @@ class EarthsideStation(Station):
         print 'LAUNCHED!',amt
         
         #dock vessel to stat
-        cargo_vessel.home_station = stat_id
-        cargo_vessel.home_relationship = 'Wholly-Owned Subsidiary'
+        #cargo_vessel.home_station = stat_id
+        #cargo_vessel.home_relationship = 'Wholly-Owned Subsidiary'
         cargo_vessel.dock(stat_id)
         return True
         
@@ -105,6 +110,12 @@ if __name__ == "__main__":
     import util
 
     test.modules.append(module.SolarPowerModule().id)
+    
+    #Solar Power Plant
+    for r in range(1,250):
+        test.modules.append(module.SolarPowerModule().id)
+    
+        
     test.modules.append(module.BasicLivingModule().id)
     #test.modules.append(module.BasicHydroponicsModule().id)        
     test.modules.append(module.BasicHabitationModule().id)
@@ -123,8 +134,8 @@ if __name__ == "__main__":
     #print test.burn(10)
     #quit()
             
-    for i in range(1,1000):
-        print 'i:', i
+    for i in range(1,100000):
+        #print 'i:', i
         for s in globalvars.stations.values():
             s.update(globalvars.config['TIME FACTOR']*10000*0.5)
         #test.update(globalvars.config['TIME FACTOR']*10000*0.5)            

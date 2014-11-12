@@ -26,7 +26,7 @@ def generate_random_skillset():
     return skills
     
 def run(job,actor,station,duration):
-    print job, actor.name, station.name, duration
+    #print job, actor.name, station.name, duration
     if job not in joblist.keys(): return 0.0
     new_dur = duration * actor.skill[job]
     _eff = station.satisfy_reaction(joblist[job],new_dur)
