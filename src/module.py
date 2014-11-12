@@ -21,6 +21,8 @@ class Module(object):
         # all modules need an admin point - represents the abstract ability to know what's going on with the station
         # could have an in-game effect for underfilling: station would "go dark" and some events would not be shown
         self.admin_need= {'Name':'placeholder', 'Inputs':{'AdminPts':1.0}, 'Outputs':{} }                    
+
+        self.priority = 0.5
         
     def set_station_owner(self,station):
         self.station = station
@@ -40,6 +42,23 @@ class SolarPowerModule(Module):
         Module.__init__(self)     
         self.reaction_base.append( {'Name':'placeholder', 'Inputs':{}, 'Outputs':{'SolarPower': 960.0} } ) #m^2 of solar array
         self.mass = 4000 #kg
+        self.priority = 0.0
+                       
+class MicrowavePowerAntenna(Module):
+    def __init__(self):
+        Module.__init__(self)     
+        self.mass = 10000 #kg
+        self.priority = 1.0
+        
+    def update(self,station,dt):
+        Module.update(self,station,dt)
+        
+        assert station.location in ['LEO','GEO','ISS']
+        
+        power_available = station.storage['Power']
+        station.sub_item('Power',power_available)
+        
+        station.financial_account += power_available * 0.85 / 3.6 * 0.08 #TODO add more dynamic price calculations
                        
 class BasicInsideModule(Module):
     '''generic atmosphere-filled module'''
@@ -49,7 +68,22 @@ class BasicInsideModule(Module):
         self.reaction_base.append( {'Name':'Habitation', 'Inputs':{}, 'Outputs':{'Living Space':39.0} } ) #m^3, based on Destiny module
         self.reaction_base.append( {'Name':'Upkeep', 'Inputs':{}, 'Outputs':{'SanitationJob':0.01} } )                           
         self.reaction_base.append( {'Name':'Upkeep', 'Inputs':{}, 'Outputs':{'MaintenanceJob':0.01} } )                           
-    
+
+class DragonCargoModule(Module):    
+    def __init__(self):
+        Module.__init__(self)             
+        self.mass = 4200 #dry mass kg
+        self.reaction_base.append( {'Name':'Habitation', 'Inputs':{}, 'Outputs':{'Volume':10.0} } ) #m^3, based on Destiny module
+        self.reaction_base.append( {'Name':'Habitation', 'Inputs':{}, 'Outputs':{'Living Space':10.0} } ) #m^3, based on Destiny module
+        self.reaction_base.append( {'Name':'Upkeep', 'Inputs':{}, 'Outputs':{'SanitationJob':0.001} } )                           
+        self.reaction_base.append( {'Name':'Upkeep', 'Inputs':{}, 'Outputs':{'MaintenanceJob':0.001} } )
+        self.reaction_base.append( {'Name':'SolarPower', 'Inputs':{}, 'Outputs':{'SolarPower': 4.5 } } ) #m^2 of solar array
+        
+        self.isp = 330 
+        #55.2 26
+        self.propellant = {'MMH':0.32,'NTO':0.68}
+
+        
                        
 class BasicHabitationModule(BasicInsideModule):
     '''Provides living space, meals, sanitation and beds for three people'''
@@ -62,7 +96,6 @@ class BasicLivingModule(BasicInsideModule):
     def __init__(self):
         BasicInsideModule.__init__(self)                                 
         self.reaction_base.append( {'Name':'Habitation', 'Inputs':{}, 'Outputs':{'Toilet Capacity':3.0} } )        
-        #self.reaction_base.append( {'Name':'Lifesupport', 'Inputs':{'Power':0.3}, 'Outputs':{'AirPurification':3.0} } )        
         self.filtration = {'Name':'Lifesupport', 'Inputs':{'Power':43.2,'Liquid Waste':5.0}, 'Outputs':{'Gray Water':4.5, 'Brine': 0.5} }
         self.distillation = {'Name':'Lifesupport', 'Inputs':{'Power':43.2,'Gray Water':5.0}, 'Outputs':{'Water':4.95, 'Brine': 0.05} }        
         self.scrubbing = { 'Name':'Scrubbing', 'Inputs':{'Power':86.4, 'Carbon Dioxide':2.0},'Outputs':{} }

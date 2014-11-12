@@ -16,7 +16,7 @@ class Station:
         self.accumulatedDeltavee = 0.0 #leftover dv from unmet stationkeeping burns.  Need to be spent for rendevous
         self.storage = dict()
         self.actors = []
-        self.modules = []
+        self.modules = []        
         self.jobs = []
         self.res_capacity = 1 #kg
         self.name = name if name is not None else "Generic Station" #TODO write witty station name generator
@@ -24,7 +24,7 @@ class Station:
         self.home_station = None
         self.home_relationship = None
         
-        self.account = 1000000000 #one BILLION dollars!
+        self.financial_account = 0#1000000000 #one BILLION dollars!
                 
         self.reaction_base = []
         self.reaction_actv = []
@@ -41,9 +41,12 @@ class Station:
         self.storage_avg = dict()     
         
         self.storage_avg_price = dict() #used in trading
+        self.storage_tariff = dict() #cost to sell a kg of each item
         
         self.nontradeable = ['Meals','Carbon Dioxide','Liquid Waste','Oxygen','Gray Water','Hydrogen'] #resources (generally intermediate) THIS station doesn't need or care to trade
-        #self.nontradeable = ['Meals','Liquid Waste','Gray Water','Hydrogen'] #resources (generally intermediate) THIS station doesn't need or care to trade                  
+        #self.nontradeable = ['Meals','Liquid Waste','Gray Water','Hydrogen'] #resources (generally intermediate) THIS station doesn't need or care to trade              
+        
+        self.resupply_timer = util.seconds(3,'months')    
                
     def add_item(self,item,amt):
         if item in self.storage: 
@@ -66,7 +69,7 @@ class Station:
                
     def update(self,dt):            
     
-        self.atrophy_intangible_resources(dt)        
+        self.atrophy_intangible_resources(dt)                        
                         
         if self.refresh_config:
             self.reaction_base = []
@@ -90,28 +93,30 @@ class Station:
         #burn for stationkeeping
         dv = self.stationKeepingDeltavee(dt)
         sk = self.burn(dv)
-                       
-                       
-        for a in self.actors:
-            act = globalvars.actors[a]
-            act.update(self,dt)                                   
         
-        for m in self.modules:            
-            mod = globalvars.modules[m]
-            if not mod.active: continue
-            mod.update(self,dt)
-                        
-        for r in self.reaction_base:
-            self.satisfy_reaction(r,dt)
-                                        
         
         #any necessary resource tweaking - power, admin, etc
-        if 'SolarPower' in self.storage:
-            irradiance = 1.366 #kW/m^2, Earth orbit
-            efficiency = .22
-            kw_to_mj = (dt/3600)
-            self.add_item('Power',self.storage['SolarPower']*irradiance*efficiency*(dt/3600.0)*3.6) #m2 * (kW/m2) * (eff) * (s * (hr/s)) * (mJ/kW)             
-            self.storage['SolarPower'] = 0
+        
+        self.convert_solar_power(dt)               
+        
+        for r in self.reaction_base:
+            self.satisfy_reaction(r,dt)        
+                                                
+        for a in self.actors:
+            act = globalvars.actors[a]
+            act.update(self,dt)                                                
+        
+        sortm = sorted(self.modules,key = lambda m: globalvars.modules[m].priority)
+        for m in sortm:            
+            mod = globalvars.modules[m]            
+            if not mod.active: continue
+            mod.update(self,dt)
+            #self.convert_solar_power(dt)
+          
+                        
+                                        
+        
+        
                                                                 
         #calculate efficiency for station utilization, next time
             #jobs
@@ -121,7 +126,7 @@ class Station:
         #calculate resource change
         for s in self.storage:
             if s in intangibles: continue
-            if s not in self.storage_prev: 
+            if s not in self.storage_prev or s not in self.storage_avg: 
                 self.storage_prev[s] = 0
                 self.storage_avg[s] = self.storage[s] 
             else:                
@@ -136,12 +141,24 @@ class Station:
                     self.storage_usage[s] *= max(1-dt/(self.storage_limit/3.0),0)
                     self.storage_usage[s] += (_diff/dt)*min(dt/(self.storage_limit/3.0),1)
                     
-                
+        self.resupply_timer -= dt
+        if self.resupply_timer < 0:
+            self.resupply_timer = util.seconds(3,'months')
+            self.earthside_resupply()
+            
     
         #reset last_storage
         for s in self.storage:
             self.storage_prev[s] = self.storage[s]
         
+        
+    def convert_solar_power(self,dt):
+        if 'SolarPower' in self.storage:
+            loc = botex.fetchLocation(self.location)
+            irradiance = loc.primary().intensityFromRoot()/1000.0 #kW/m^2
+            efficiency = .22    
+            self.add_item('Power',self.storage['SolarPower']*irradiance*efficiency*(dt/3600.0)*3.6) #m2 * (kW/m2) * (eff) * (s * (hr/s)) * (mJ/kW)             
+            self.storage['SolarPower'] = 0        
         
     def satisfy_reaction(self,reaction,dt):
         r = reaction
@@ -221,8 +238,9 @@ class Station:
     def print_output(self):
         #convenience function to change what's being printed        
         prior = self.storage_values()
-        for p in sorted(prior.keys(), key= lambda a: prior[a], reverse = True):
-            print p, prior[p], self.storage[p], self.storage_usage[p]*self.storage_limit
+        #for p in sorted(prior.keys(), key= lambda a: prior[a], reverse = True):
+        #    print p, prior[p], self.storage[p], self.storage_usage[p]*self.storage_limit
+        print self.storage['Power'], self.financial_account
         
     def init_storage_std(self):
         mod_count = len(self.modules)
@@ -233,7 +251,7 @@ class Station:
         self.storage['General Consumables'] = 50 * mod_count
         self.storage['Parts'] = 50 * mod_count
         self.storage['RP-1'] = 100 * mod_count
-        self.storage['LOX'] = 300 * mod_count        
+        self.storage['LOX'] = 300 * mod_count                    
         
     def earthside_resupply(self):
         '''Buy goods from Earth. Limited to whatever can be crammed in a Dragon capsule'''        
@@ -243,19 +261,23 @@ class Station:
         amt = dict()
         max_amt = 3310 #kgs to LEO.  
         #calculate total mass need
-        tot_mass = 0.0
-        for p in sorted(val.keys(), key= lambda a: val[a], reverse = True):
-            if val[p] >= 1: tot_mass += -1*self.storage_usage[p]*self.storage_limit
-        print tot_mass
+        #tot_mass = 0.0
+        #for p in sorted(val.keys(), key= lambda a: val[a], reverse = True):
+        #    if val[p] >= 1: tot_mass += -1*self.storage_usage[p]*self.storage_limit
+        #print tot_mass
         
         tot_val = 0.0
         for p in sorted(val.keys(), key= lambda a: val[a], reverse = True):
-            if val[p] >= 0: tot_val += val[p]*-1*self.storage_usage[p]
+            if val[p] > 0: tot_val += val[p]*-1*self.storage_usage[p]
             
         for p in sorted(val.keys(), key= lambda a: val[a], reverse = True):
-            if val[p] >= 0: amt[p] = max_amt*(val[p]*-1*self.storage_usage[p]/tot_val)
-        print amt
-        return
+            if val[p] > 0: amt[p] = max_amt*(val[p]*-1*self.storage_usage[p]/tot_val)
+            
+        #ask earthside for amt goods
+        earth = globalvars.stations[globalvars.earthside]
+        earth.send_resupply(self.id,amt)
+        
+        return True   
         
     def get_mass(self):
         mass = 0
@@ -311,8 +333,19 @@ class Station:
         loc_sk = botex.fetchLocation(self.location).stationKeeping()
         return loc_sk*dt
         
+    def dock(self,stat_id):
+        stat = globalvars.stations[stat_id]    
+        if self.location != stat.location: return False #todo maybe move there?
+        if stat_id == self.home_station and self.home_relationship == 'Wholly-Owned Subsidiary':
+            #merge, more or less completely, with the station
+            for s in self.storage:
+                if s in intangibles: continue
+                stat.add_item(s,self.storage[s])
+                self.sub_item(s,self.storage[s])
+        
+        
     #trade pseudocode - to be performed by the trading vessel
-        #currnt = get current station
+        #current = get current station
         #target = get random station, weighted by dv, of a random selection of other stations, or home if we have one and we're not there
         #cur_val = current values
         #cur_amt = current usage
