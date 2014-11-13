@@ -87,9 +87,9 @@ globalvars.earthside = EarthsideStation().id
         
 if __name__ == "__main__":
     
-    station = Station()
+    #station = Station()
     
-    transfer = Station()
+    #transfer = Station()
 
     #print botex.LowOrbitLocation(botex.earth).altitude()
     #print botex.Course(botex.fetchLocation(station.location),botex.fetchLocation(globalvars.earthside.location)).deltavee()
@@ -112,21 +112,23 @@ if __name__ == "__main__":
     test.modules.append(module.SolarPowerModule().id)
     
     #Solar Power Plant
-    for r in range(1,250):
+    for r in range(1,350):
         test.modules.append(module.SolarPowerModule().id)
     
         
-    test.modules.append(module.BasicLivingModule().id)
+    #test.modules.append(module.BasicLivingModule().id)
     #test.modules.append(module.BasicHydroponicsModule().id)        
-    test.modules.append(module.BasicHabitationModule().id)
-    test.modules.append(module.GenericEngineModule().id)    
+    #test.modules.append(module.BasicHabitationModule().id)
+    test.modules.append(module.GenericLH2LOXEngineModule().id)    
+    test.modules.append(module.LH2ElectrolysisModule().id)        
         
     test.modules.append(module.MicrowavePowerAntenna().id)    
 
+    test.add_item('Water',10000)
     test.financial_account = 1000000000
         
-    act = actors.Human()    
-    test.actors.append(act.id)
+    #act = actors.Human()    
+    #test.actors.append(act.id)
     
     test.init_storage_std()
     
@@ -136,8 +138,11 @@ if __name__ == "__main__":
             
     for i in range(1,100000):
         #print 'i:', i
-        for s in globalvars.stations.values():
-            s.update(globalvars.config['TIME FACTOR']*10000*0.5)
+        print
+        for s in globalvars.stations.keys():
+            globalvars.stations[s].update(globalvars.config['TIME FACTOR']*10000*0.5)
+            if not globalvars.stations[s].modules and s != globalvars.earthside:
+                del globalvars.stations[s]
         #test.update(globalvars.config['TIME FACTOR']*10000*0.5)            
         print util.timestring(globalvars.config['TIME FACTOR']*10000*0.5*i)
         #pprint.pprint(test.storage)

@@ -227,13 +227,16 @@ class Station:
             tot += self.gas_pp(g)
         return tot
         
+    def storage_value(self,item):
+        if not item or item in self.nontradeable or item not in self.storage_usage: return 0
+        return -1.0*(self.storage_usage[item]*self.storage_limit)/self.storage[item] if self.storage[item] else 0 
+        
     def storage_values(self):
         out = dict()
         for s in self.storage_usage:
-            if s in self.nontradeable: continue
-            #out[s] = self.storage_limit/(-1*self.storage_avg[s]/self.storage_usage[s]) if self.storage_usage[s] and self.storage_avg[s]/self.storage_usage[s] else 0
-            out[s] = -1.0*(self.storage_usage[s]*self.storage_limit)/self.storage[s] if self.storage[s] else 0 
-            #out[s] = self.storage_avg[s]/(self.storage_usage[s]*3*self.storage_limit) if self.storage_usage[s] else 0 
+            val =  self.storage_value(s)
+            if val != 0:
+                out[s]=val
         return out        
         
     def print_output(self):
@@ -255,14 +258,15 @@ class Station:
             if isinstance(mod,module.BasicInsideModule):
                 self.add_item('Oxygen', 10)
                 self.add_item('Nitrogen', 100)
+                self.add_item('General Consumables',5)
+                self.add_item('Parts',5)            
             if isinstance(mod,module.BasicHabitationModule):
                 self.add_item('Food', 300)
-                self.add_item('Water',300)
-        
-            self.add_item('General Consumables',5)
-            self.add_item('Parts',5)
-            self.add_item('RP-1', 100 )
-            self.add_item('LOX', 300 )
+                self.add_item('Water',300)        
+            if isinstance(mod,module.GenericEngineModule):
+                for p in mod.propellant:
+                    self.add_item(p, 2000*mod.propellant[p] )
+            
             
     def earthside_resupply(self):
         '''Buy goods from Earth. Limited to whatever can be crammed in a Dragon capsule'''        
@@ -346,6 +350,7 @@ class Station:
 
     def stationKeepingDeltavee(self,dt):
         loc_sk = botex.fetchLocation(self.location).stationKeeping()
+        print "Stationkeeping budget: ",loc_sk*util.seconds(1,'year')
         return loc_sk*dt
         
     def dock(self,stat_id):

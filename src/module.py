@@ -40,9 +40,13 @@ class Module(object):
 class SolarPowerModule(Module):
     def __init__(self):
         Module.__init__(self)     
-        self.reaction_base.append( {'Name':'placeholder', 'Inputs':{}, 'Outputs':{'SolarPower': 960.0} } ) #m^2 of solar array
+        #self.reaction_base.append( {'Name':'placeholder', 'Inputs':{}, 'Outputs':{'SolarPower': 960.0} } ) #m^2 of solar array
         self.mass = 4000 #kg
         self.priority = 0.0
+    
+    def update(self,station,dt):
+        Module.update(self,station,dt)
+        station.add_item('SolarPower',960.0)    
                        
 class MicrowavePowerAntenna(Module):
     def __init__(self):
@@ -126,8 +130,32 @@ class GenericEngineModule(Module):
         
         #based loosely on the NK-33
         self.mass = 1200
-        self.isp = 330 
+        self.isp = 358
         self.propellant = {'RP-1':0.25,'LOX':0.75}
+
+class GenericLH2LOXEngineModule(GenericEngineModule):
+    def __init__(self):
+        Module.__init__(self)
+        
+        #based loosely on the SSME
+        self.mass = 1200
+        self.isp = 450
+        self.propellant = {'LH2':0.2,'LOX':0.8}
+        
+class LH2ElectrolysisModule(Module):
+    def __init__(self):
+        Module.__init__(self)     
+        self.mass = 10000 #kg
+        #electrolysis = 237 kJ per mol = 23.7 kJ/g = 23.7 mJ/kg
+        self.electrolysis = { 'Name':'Fuel Electrolysis', 'Inputs':{'Power':23.7*79.2, 'Water':79.2},'Outputs':{'LOX':79.2*8/10.0 ,'LH2':79.2*2/10.0} } 
+        
+    def update(self,station,dt):
+        Module.update(self,station,dt)
+        
+        #check if we have LH2, and need more
+        if station.storage_value('LH2') > 0.5:
+            #conduct electrolysis
+            station.satisfy_reaction(self.electrolysis, dt)     
 
         
 class BasicHydroponicsModule(BasicInsideModule):
