@@ -565,10 +565,7 @@ class LowOrbitLocation(AltitudeLocation):
     world's radius. """
     
     def __init__(self, primary):
-        height = primary.radius() / 0.1
-        atmo = primary.atmosphereMass()        
-        if atmo: height = primary.altitudeAtPressure(6.1283e-6)
-        AltitudeLocation.__init__(self, primary, height)
+        AltitudeLocation.__init__(self, primary, primary.lowOrbitAltitude())
     
 
 
