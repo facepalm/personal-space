@@ -31,7 +31,7 @@ class Human(Actor):
 
         #happiness factors.  Failing these draws should hit happiness
         self.comfort_needs = []
-        self.comfort_needs.append({'Name':'HabitationMorale', 'Inputs':{'Habitation':1.0}, 'Outputs':{} })
+        self.comfort_needs.append({'Name':'HabitationMorale', 'Inputs':{'Basic Habitation':1.0}, 'Outputs':{} })
         self.comfort_needs.append({'Name':'PersonalSpace', 'Inputs':{'Living Space':60.0}, 'Outputs':{} }) #m^3 of space needed to be comfortable. #TODO refine
         self.comfort_needs.append({'Name':'PrivateMatters', 'Inputs':{'Toilet Capacity':1.0}, 'Outputs':{} })
         

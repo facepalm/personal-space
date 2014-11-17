@@ -57,7 +57,7 @@ class MicrowavePowerAntenna(Module):
     def update(self,station,dt):
         Module.update(self,station,dt)
         
-        assert station.location in ['LEO','GEO','ISS']
+        assert station.location in ['LEO','HEO','GEO','ISS']
         
         power_available = station.storage['Power']
         station.sub_item('Power',power_available)
@@ -65,13 +65,14 @@ class MicrowavePowerAntenna(Module):
         station.financial_account += power_available * 0.85 / 3.6 * 0.08 #TODO add more dynamic price calculations
                        
 class BasicInsideModule(Module):
-    '''generic atmosphere-filled module'''
+    '''generic atmosphere-filled module.  One window'''
     def __init__(self):
         Module.__init__(self)             
         self.reaction_base.append( {'Name':'Habitation', 'Inputs':{}, 'Outputs':{'Volume':116.0} } ) #m^3, based on Destiny module
         self.reaction_base.append( {'Name':'Habitation', 'Inputs':{}, 'Outputs':{'Living Space':39.0} } ) #m^3, based on Destiny module
         self.reaction_base.append( {'Name':'Upkeep', 'Inputs':{}, 'Outputs':{'SanitationJob':0.01} } )                           
         self.reaction_base.append( {'Name':'Upkeep', 'Inputs':{}, 'Outputs':{'MaintenanceJob':0.01} } )                           
+        self.reaction_base.append( {'Name':'Viewing Window', 'Inputs':{}, 'Outputs':{'Amenity: Window':0.05} } )                           
 
 class DragonCargoModule(Module):    
     def __init__(self):
@@ -93,7 +94,7 @@ class BasicHabitationModule(BasicInsideModule):
     '''Provides living space, meals, sanitation and beds for three people'''
     def __init__(self):
         BasicInsideModule.__init__(self)             
-        self.reaction_base.append( {'Name':'Habitation', 'Inputs':{}, 'Outputs':{'Habitation':3.0} } )                            
+        self.reaction_base.append( {'Name':'Habitation', 'Inputs':{}, 'Outputs':{'Basic Habitation':3.0} } )                            
 
 class BasicLivingModule(BasicInsideModule):
     '''Provides life support, maintenance for three people'''    

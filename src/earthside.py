@@ -13,6 +13,26 @@ def get_launch_cost(launches = None):
     if not launches: launches = launch_rate
     return 16000*math.exp(-math.log(launches)/math.log(3.0)) #COMPLETE ass-pull, to make the numbers work out for atlas (1/yr) vs falcon9 (4/yr)
 
+#tourism modeling
+#data points: 
+#   Real space tourism - 20M, 1 visitor per year, about twice launch cost (ish)
+#   Hawaii - 200*10*2 = 4k, 8000000 visitor per year
+#   Extrapolation: 
+#   8000000 = A*math.exp(-math.log(4000)/B)
+#   1 = A*math.exp(-math.log(20000000)/B)
+#   8000000 = math.exp(-math.log(4000)/B)/math.exp(-math.log(20000000)/B)
+#   B = 0.535
+#   A = 44338912668553.06
+
+class LaunchAgency(object):
+    def __init__(self):
+        pass
+        
+    def update(self,dt):
+        for s in globalvars.stations.values():
+            pass
+
+
 class EarthsideStation(Station):
     def __init__(self):
         Station.__init__(self,name='Earthside',location = 'Earthside')
@@ -52,10 +72,13 @@ class EarthsideStation(Station):
         print amt
         if stat_id not in globalvars.stations: return False
         stat = globalvars.stations[stat_id]
-        if stat.location != 'LEO': return False
-        if stat.financial_account < 10000*get_launch_cost(): return False #cost of launch + supplies
+        if stat.location not in ['LEO','GEO','ISS','HEO']: return False
+        dv = botex.Course(botex.earthSurface,botex.fetchLocation(stat.location)).deltavee()
+        amount_to_ship = 13150* (10.366/(math.exp((dv)/(450*9.8)) - 1))
+        if stat.financial_account < amount_to_ship*get_launch_cost(): return False #cost of launch + supplies
         
         cargo_vessel = Station()
+        cargo_vessel.location = stat.location
         #cargo_vessel.modules.append(module.DragonCargoModule().id)
         #cargo_vessel.add_item('MMH',412.8)
         #cargo_vessel.add_item('NTO',877.2)
@@ -64,10 +87,12 @@ class EarthsideStation(Station):
         tot = 0
         for a in amt:
             assert amt[a] > 0
-            tot += amt[a]
-            cargo_vessel.add_item(a,amt[a])
+            tot += amt[a]*amount_to_ship
+            cargo_vessel.add_item(a,amount_to_ship*amt[a])
         
         assert tot <= 14000 #3320
+        #print amount_to_ship, tot
+        #quit()
         
         stat.financial_account -= get_launch_cost()*cargo_vessel.mass
         
@@ -94,8 +119,21 @@ if __name__ == "__main__":
     #print botex.LowOrbitLocation(botex.earth).altitude()
     #print botex.Course(botex.fetchLocation(station.location),botex.fetchLocation(globalvars.earthside.location)).deltavee()
     
-    '''print botex.Course(botex.earthSurface,botex.lowEarthOrbit).deltavee()
-    print botex.Course(botex.earthSurface,botex.highEarthOrbit).deltavee()        
+    #leoDV =  botex.Course(botex.earthSurface,botex.lowEarthOrbit).deltavee()    
+    #geoDV = botex.Course(botex.earthSurface,botex.stationaryEarthOrbit).deltavee()
+    #dv = isp*9.8*math.log(m0/m1)
+    #print leoDV
+    #print botex.Course(botex.earthSurface,botex.stationaryEarthOrbit).deltavee()    
+    #print botex.Course(botex.lowEarthOrbit,botex.stationaryEarthOrbit).deltavee()     
+    #fuel = math.exp(leoDV/(450*9.8))-1
+    #print fuel
+    #leogeoDV = 450*9.8*math.log(fuel+m1/m1)
+    # fuel+m1/m1 = math.exp(leogeoDV/(450*9.8))
+    #fuel = (math.exp(leogeoDV/(450*9.8)) - 1)*m1
+    #m1 = fuel/(math.exp(leogeoDV/(450*9.8)) - 1)    
+    #print fuel/(math.exp((leoDV)/(450*9.8)) - 1)
+    #quit()
+    '''print botex.Course(botex.earthSurface,botex.highEarthOrbit).deltavee()        
     print botex.Course(botex.earthSurface,botex.stationaryEarthOrbit).deltavee()    
     print get_launch_cost(),get_launch_cost(4.0)
     print
@@ -131,7 +169,7 @@ if __name__ == "__main__":
     #test.actors.append(act.id)
     
     test.init_storage_std()
-    
+    test.location = 'GEO'
     #print 'Stationkeeping:',test.stationKeepingDeltavee(util.seconds(1,'year'))
     #print test.burn(10)
     #quit()

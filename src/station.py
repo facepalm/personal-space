@@ -6,7 +6,8 @@ import job
 import botex
 import module
 
-intangibles = ['Power','SolarPower','AdminPts','Living Space','Toilet Capacity','Habitation','Volume']
+intangibles = ['Power','SolarPower','AdminPts','Living Space','Toilet Capacity','Basic Habitation','Volume']
+intangibles.extend(['Amenity: Window','Luxury Habitation','Deluxe Habitation','Standard Habitation'])
 intangibles.extend(job.joblist.keys())
 intangibles.extend([j.split('Job')[0] for j in job.joblist.keys()])
 
@@ -270,12 +271,12 @@ class Station:
             
     def earthside_resupply(self):
         '''Buy goods from Earth. Limited to whatever can be crammed in a Dragon capsule'''        
-        if self.location != 'LEO' or not globalvars.earthside: return None
+        if self.location not in ['LEO','GEO','ISS','HEO'] or not globalvars.earthside: return None
         print 'Earthside resupply!'
         val = self.storage_values()
         max_val = sorted(val.values(), reverse=True)[0]
         amt = dict()
-        max_amt = 13150 #kgs to LEO.  
+        max_amt = 1 
         #calculate total mass need
         tot_mass = 0.0
         for p in sorted(val.keys(), key= lambda a: val[a], reverse = True):
