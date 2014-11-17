@@ -1,16 +1,42 @@
 from module import BasicInsideModule
 
+habitation_list = ['Basic Habitation','Standard Habitation','Deluxe Habitation','Luxury Habitation']
+amenity_list = ['Amenity: Exercise','Amenity: Window']
+food_list = ['Meals']
+
+def generate_random_amenity_prefs():
+    prefs=dict()
+    
+    hab_weights = [random.random() for r in range(0,len(habitation_list))]
+    hab_sum = sum(hab_weights)
+    prefs['Habitation'] = [w/hab_sum for w in hab_weights]
+    
+    _weights = [random.random() for r in range(0,len(amenity_list))]
+    _sum = sum(weights)
+    prefs['Amenities'] = [w/_sum for w in _weights]
+    
+    _weights = [random.random() for r in range(0,len(food_list))]
+    _sum = sum(weights)
+    prefs['Meals'] = [w/_sum for w in _weights]          
+    
+    return prefs  
+
+
 class StandardHabitationModule(BasicInsideModule):
-    '''Provides living space, meals, sanitation and beds for three people'''
+    '''Provides beds for two people'''
     def __init__(self):
         BasicInsideModule.__init__(self)             
         self.reaction_base.append( {'Name':'Standard Habitation', 'Inputs':{}, 'Outputs':{'Standard Habitation':2.0} } )
+        self.reaction_base.append( {'Name':'Habitation', 'Inputs':{}, 'Outputs':{'Toilet Capacity':2.0} } )
+                
         
 class DeluxeHabitationModule(BasicInsideModule):
-    '''Provides living space, meals, sanitation and beds for three people'''
+    '''Provides bed for one person'''
     def __init__(self):
         BasicInsideModule.__init__(self)             
-        self.reaction_base.append( {'Name':'Deluxe Habitation', 'Inputs':{}, 'Outputs':{'Deluxe Habitation':2.0} } )        
+        self.reaction_base.append( {'Name':'Deluxe Habitation', 'Inputs':{}, 'Outputs':{'Deluxe Habitation':1.0} } )        
+        self.reaction_base.append( {'Name':'Habitation', 'Inputs':{}, 'Outputs':{'Toilet Capacity':1.0} } )        
+        
         
 class ZeroGymModule(BasicInsideModule):
     def __init__(self):

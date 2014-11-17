@@ -1,5 +1,6 @@
 import util
 import job
+import tourism
 
 class Actor(object):
     def __init__(self):
@@ -10,6 +11,8 @@ class Actor(object):
         self.reaction_actv = []
         
         self.reaction_base.append( {'Name':'Clutter', 'Inputs':{}, 'Outputs':{'SanitationJob': .05 } } )
+
+        self.amenity_prefs = tourism.generate_random_amenity_prefs()
         
         self.skill = job.generate_random_skillset()
         self.mass = 80
