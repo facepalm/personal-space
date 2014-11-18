@@ -2,6 +2,7 @@ from module import BasicInsideModule
 
 habitation_list = ['Basic Habitation','Standard Habitation','Deluxe Habitation','Luxury Habitation']
 amenity_list = ['Amenity: Exercise','Amenity: Window']
+beverage_list = ['Water','Beer','Spirits']
 food_list = ['Meals']
 
 def generate_random_amenity_prefs():
@@ -18,6 +19,11 @@ def generate_random_amenity_prefs():
     _weights = [random.random() for r in range(0,len(food_list))]
     _sum = sum(weights)
     prefs['Meals'] = [w/_sum for w in _weights]          
+    
+    _weights = [random.random() for r in range(0,len(beverage_list))]
+    _sum = sum(weights)
+    prefs['Drinks'] = [w/_sum for w in _weights]          
+    
     
     return prefs  
 

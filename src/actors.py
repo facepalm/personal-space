@@ -1,6 +1,8 @@
 import util
 import job
 import tourism
+import random
+
 
 class Actor(object):
     def __init__(self):
@@ -16,6 +18,16 @@ class Actor(object):
         
         self.skill = job.generate_random_skillset()
         self.mass = 80
+        
+        self.financial_account = 0
+        self.financial_priorities = [random.random(), random.random(), random.random()] #recreation, investment, savings
+        
+        self.home_station = None
+        self.home_relationship = None
+        
+        self.role = 'Staff' #also: Freelancer, Tourist
+        
+        self.priority = 0.5
 
     def get_reactions(self):
         return [self.reaction_base, self.reaction_actv]
@@ -23,6 +35,10 @@ class Actor(object):
     def update(self,station,dt):
         for r in self.reaction_base:
             station.satisfy_reaction(r,dt)
+            
+        #reasses priority
+        self.priority = 0.5        
+        if self.role == 'Tourist': self.priority = 0.25
 
 class Human(Actor):
     def __init__(self):
@@ -49,9 +65,10 @@ class Human(Actor):
 
     def update(self,station,dt):
         Actor.update(self,station,dt)
-        _eff = station.satisfy_reaction(self.respiration,dt)       
+                
+        _eff = station.satisfy_reaction(self.respiration,dt)                       
         
-        job_time = dt
+        job_time = dt                
         
         if _eff < 0.4:
             pass #TODO SUFFOCATING!  Bad things happen
