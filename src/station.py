@@ -93,8 +93,13 @@ class Station:
                 #self.reaction_actv.extend(act)                                                                                    
         
         #burn for stationkeeping
+        if self.accumulatedDeltavee > 0:
+            if self.burn(self.accumulatedDeltavee):
+                self.accumulatedDeltavee = 0
+        
         dv = self.stationKeepingDeltavee(dt)
-        sk = self.burn(dv)
+        if not self.burn(dv): self.accumulatedDeltavee += dv
+        
         
         
         #any necessary resource tweaking - power, admin, etc
