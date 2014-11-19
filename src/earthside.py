@@ -4,6 +4,7 @@ import math
 import globalvars
 import module
 import random
+import util
 
 #nominally, handles everything going on earthside
 
@@ -163,8 +164,7 @@ if __name__ == "__main__":
     test.modules.append(module.MicrowavePowerAntenna().id)    
 
     test.add_item('Water',10000)
-    test.financial_account = 1000000000
-        
+    test.financial_account = 1000000000            
     #act = actors.Human()    
     #test.actors.append(act.id)
     
@@ -173,6 +173,20 @@ if __name__ == "__main__":
     #print 'Stationkeeping:',test.stationKeepingDeltavee(util.seconds(1,'year'))
     #print test.burn(10)
     #quit()
+    
+    test2 = Station('Tourist Test Station')        
+    test2.modules.append(module.SolarPowerModule().id)    
+        
+    test2.modules.append(module.BasicLivingModule().id)
+    #test2.modules.append(module.BasicHydroponicsModule().id)        
+    test2.modules.append(module.BasicHabitationModule().id)    
+    
+    test2.financial_account = 1000000000            
+    test2.init_storage_std()
+    
+    act = actors.Human()    
+    test2.actors.append(act.id)
+    
             
     for i in range(1,100000):
         #print 'i:', i
@@ -185,6 +199,6 @@ if __name__ == "__main__":
         print util.timestring(globalvars.config['TIME FACTOR']*10000*0.5*i)
         #pprint.pprint(test.storage)
         print 'Launch cost: ',get_launch_cost(), launch_rate
-        test.print_output()
+        test2.print_output()
         sleep(0.05)    
-    test.earthside_resupply()
+

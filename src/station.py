@@ -7,7 +7,7 @@ import botex
 import module
 
 intangibles = ['Power','SolarPower','AdminPts','Living Space','Toilet Capacity','Basic Habitation','Volume']
-intangibles.extend(['Amenity: Window','Luxury Habitation','Deluxe Habitation','Standard Habitation'])
+intangibles.extend(['Amenity: Window','Amenity: Exercise','Luxury Habitation','Deluxe Habitation','Standard Habitation'])
 intangibles.extend(job.joblist.keys())
 intangibles.extend([j.split('Job')[0] for j in job.joblist.keys()])
 
@@ -356,7 +356,7 @@ class Station:
 
     def stationKeepingDeltavee(self,dt):
         loc_sk = botex.fetchLocation(self.location).stationKeeping()
-        print "Stationkeeping budget: ",loc_sk*util.seconds(1,'year')
+        #print "Stationkeeping budget: ",loc_sk*util.seconds(1,'year')
         return loc_sk*dt
         
     def dock(self,stat_id):

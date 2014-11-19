@@ -11,16 +11,19 @@ class Actor(object):
 
         self.reaction_base = []
         self.reaction_actv = []
+
+        tourism.generate_random_amenity_prefs(self)
         
         self.reaction_base.append( {'Name':'Clutter', 'Inputs':{}, 'Outputs':{'SanitationJob': .05 } } )
-
-        self.amenity_prefs = tourism.generate_random_amenity_prefs()
         
         self.skill = job.generate_random_skillset()
         self.mass = 80
         
         self.financial_account = 0
-        self.financial_priorities = [random.random(), random.random(), random.random()] #recreation, investment, savings
+        
+        _weights = [ random.random(), random.random() ] #recreation, savings
+        _sum = sum(_weights)
+        self.financial_priorities = {'Recreation':_weights[0]/_sum, 'Savings':_weights[1]/_sum}
         
         self.home_station = None
         self.home_relationship = None
@@ -38,12 +41,13 @@ class Actor(object):
             
         #reasses priority
         self.priority = 0.5        
-        if self.role == 'Tourist': self.priority = 0.25
+        if self.role == 'Tourist': self.priority = 0.4                    
+        
 
 class Human(Actor):
     def __init__(self):
         Actor.__init__(self)
-                
+                                
         self.respiration = {'Name':'Respiration', 'Inputs':{'Oxygen':0.84}, 'Outputs':{'Carbon Dioxide':1.00} }
         self.hydration = {'Name':'Hydration', 'Inputs':{'Water':3.62}, 'Outputs':{} }
         self.excretion = {'Name':'Excretion', 'Inputs':{}, 'Outputs':{'Solid Waste':0.11, 'Liquid Waste':3.87} }
@@ -67,6 +71,13 @@ class Human(Actor):
         Actor.update(self,station,dt)
                 
         _eff = station.satisfy_reaction(self.respiration,dt)                       
+
+        #amenity calculations
+        #habitation
+        #self.amenity_prefs['Habitation']
+        #food
+        #drinks
+        #amenities
         
         job_time = dt                
         
